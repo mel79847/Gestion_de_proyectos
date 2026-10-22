@@ -1,0 +1,67 @@
+✔ disponible = físico − reservado − bloqueado (1.369313ms)
+✔ posición = disponible + en tránsito − requerimientos no reservados (0.205232ms)
+✔ ejemplo de la fase conceptual: SS 5, ROP 25, EOQ 105, CPP Bs 90 (2.401998ms)
+✔ parámetros del filtro FIL-ACE-0021 coinciden con el documento (0.316717ms)
+✔ FEFO: entrega primero el lote que vence antes y excluye vencidos (15.951013ms)
+✔ PEPS: sin vencimiento entrega el lote más antiguo y respeta bloqueos (1.244822ms)
+✔ máquina de estados: no se cierra una orden que no fue verificada (0.481595ms)
+✔ MDM: la misma pieza escrita de otra forma se detecta como duplicado (1.18525ms)
+▶ flujo principal
+  ✔ orden → reserva → salida FEFO/PEPS → cambio de pieza → cierre (27.038938ms)
+✔ flujo principal (28.131249ms)
+▶ stock y compras
+  ✔ cantidad superior al disponible: rechazo sin tocar stock y solicitud ligada a la orden (4.330657ms)
+  ✔ punto de reorden con compra en curso: no se duplica la solicitud (1.102683ms)
+  ✔ aprobación → OC del ERP → recepción parcial y total con CPP recalculado → reintento de reserva (10.053763ms)
+✔ stock y compras (15.799355ms)
+▶ integración e idempotencia
+  ✔ envío repetido con el mismo id: el WMS aplica una sola vez (1.900688ms)
+  ✔ WMS sin respuesta: reintentos con espera creciente, incidencia y recuperación sin duplicar (5.614611ms)
+  ✔ confirmación perdida: se consulta por id antes de reenviar (2.799644ms)
+  ✔ dos solicitudes simultáneas por la última unidad: solo una la compromete (3.853786ms)
+  ✔ webhook repetido: la recepción se registra una vez (2.146108ms)
+  ✔ conciliación: un ajuste no informado al ERP genera diferencia e incidencia (1.573565ms)
+✔ integración e idempotencia (18.391827ms)
+▶ reglas de negocio y seguridad
+  ✔ material incompatible con el equipo es rechazado (0.94828ms)
+  ✔ cierre bloqueado mientras exista una operación pendiente (2.357481ms)
+  ✔ un rol sin permiso recibe rechazo y la bitácora no cambia (0.72339ms)
+  ✔ MDM: rechaza el duplicado y asigna el código correlativo al material nuevo (3.239802ms)
+  ✔ transacción fallida no deja datos a medias (0.740292ms)
+✔ reglas de negocio y seguridad (8.222937ms)
+ℹ tests 23
+ℹ suites 4
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 315.169876
+▶ seguridad
+  ✔ sin token: 401; credenciales erróneas: 401; rol sin permiso: 403 (52.070434ms)
+  ✔ webhook sin firma válida es rechazado (3.735905ms)
+  ✔ la bitácora no admite UPDATE ni DELETE, ni desde SQL (8.484086ms)
+✔ seguridad (584.403007ms)
+▶ flujo completo por HTTP
+  ✔ orden OM-2026-0153: reserva, salida, cambio de pieza, cierre y solicitud por ROP (565.427612ms)
+  ✔ compra: cotizaciones, OC del ERP, recepción parcial por webhook y CPP (257.57683ms)
+✔ flujo completo por HTTP (823.325301ms)
+▶ recuperación ante fallas
+  ✔ WMS caído: reintentos, incidencia, cierre bloqueado y reproceso sin duplicar (905.569949ms)
+  ✔ respuesta perdida (conexión cortada): se recupera por id sin reenviar (700.077436ms)
+  ✔ dos órdenes por la última válvula al mismo tiempo: solo una la reserva (292.319592ms)
+  ✔ la base de datos impide dos compras abiertas del mismo material (1.831549ms)
+✔ recuperación ante fallas (1900.52383ms)
+▶ datos maestros
+  ✔ MDM rechaza el duplicado escrito distinto; el índice único es la segunda barrera (15.526496ms)
+✔ datos maestros (15.663386ms)
+✔ la reserva viaja por RabbitMQ sin barrido de la bandeja (324.242444ms)
+✔ WMS caído: reintentos por la cola con TTL y mensaje en fallidas (1062.14202ms)
+ℹ tests 12
+ℹ suites 4
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5218.645053

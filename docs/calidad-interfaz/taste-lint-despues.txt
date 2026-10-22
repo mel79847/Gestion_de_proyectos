@@ -1,0 +1,10 @@
+TASTESKILL · LINT   18 file(s)
+
+WARN
+  [mono] Monospace type. Only literal code may be monospace.  (1×)
+      web/src/estilos.css:34  ui-monospace
+  [em-dash] Em-dash habit. Use a full stop or a comma; keep at most one or two on a page.  (1×)
+      (all files):0  17 em dashes
+
+RESULT: 0 FAIL, 2 WARN
+Interface fragments marked data-ui keep their own borders and shadows. Any other line that must keep a flagged pattern for a real reason can carry the comment taste-skill-ignore.

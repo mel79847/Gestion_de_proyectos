@@ -1,0 +1,65 @@
+## de punta a punta
+  [-] Orden OM-2026-0153 registrada por el técnico y validada por el supervisor | El filtro FIL-ACE-0021 es compatible con el camión CAM-VOL-014; un material incompatible sería rechazado.
+  [-] Consulta al WMS antes de reservar | físico 28, reservado 0, bloqueado 0, disponible 28, en tránsito 0, posición 24, ROP 25. La posición ya descuenta las 4 unidades que la orden validada necesita y aún no tiene reservadas.
+  [-] Reserva solicitada | La API responde 202: la reserva queda en la bandeja de salida con un id único.
+  [ok] El WMS confirmó la reserva RES-88412 | La orden pasó a "Materiales reservados".
+  [-] Después de reservar | físico 28, reservado 4, bloqueado 0, disponible 24, en tránsito 0, posición 24, ROP 25. El físico no cambia; cambia lo disponible.
+  [ok] Salida MOV-51231 confirmada por el WMS | Lotes por PEPS: L-FA-2603 × 4. Costo al CPP del ERP: Bs 88,50 × 4 = Bs 354,00.
+  [-] Cambio de pieza registrado y orden "Cerrada" | La pieza retirada va a baja; no vuelve al stock.
+  [-] Reposición: SOL-2026-0041 por 105 unidades (EOQ) | Tras la salida se evaluó la posición contra el ROP: EOQ = 105; posición 24, ROP 25.
+
+## dos códigos
+  [-] Se intenta registrar "FILTRO ACEITE P/ MOTOR VOLVO D-13" | Descripción normalizada: "aceite d13 filtro motor volvo". Coincide con FIL-ACE-0021 (100 %).
+  [ok] Rechazado: MATERIAL_DUPLICADO | Ya existe un material equivalente: FIL-ACE-0021 (Filtro de aceite motor Volvo D13).
+  [ok] "Filtro de aceite motor Scania DC13" es un artículo nuevo: código FIL-ACE-0035 | El correlativo lo asigna el maestro; nadie escribe el código a mano. Mantenimiento, almacén y compras usarán ese mismo código.
+
+## más de lo que hay
+  [-] Orden OM-2026-0154 pide 6 juegos de empaquetaduras | Disponible en el WMS: 4.
+  [ok] Respuesta del WMS: STOCK_INSUFICIENTE | Disponible 4, solicitado 6. La orden queda "En espera de repuestos".
+  [-] El stock no cambió | físico 4, reservado 0, bloqueado 0, disponible 4, en tránsito 0, posición -2, ROP 3
+  [ok] Solicitud SOL-2026-0042 (falta de stock de OM-2026-0154) | 7 unidades: Máximo 5 − posición -2; posición -2, ROP 3. Si ya había una compra en curso, se usa esa y no se crea otra.
+
+## comprar dos veces
+  [-] Evaluación de la válvula de descarga VAL-COM-0042 contra el ROP | físico 1, reservado 0, bloqueado 0, disponible 1, en tránsito 2, posición 3, ROP 5
+  [ok] No se duplica: SOL-2026-0040 está en "OC creada" | OC del ERP 4500012871, entrega prometida 2026-11-04. En PostgreSQL un índice único parcial impide dos solicitudes abiertas del mismo material.
+
+## no responde
+  [-] Orden OM-2026-0155 validada y el WMS deja de responder | Se solicita la reserva: la API la acepta igual porque solo la deja en la bandeja de salida.
+  [espera] El trabajador reintenta | reintento en 1.5 s, reintento en 3 s, incidencia
+  [ok] Incidencia WMS_SIN_RESPUESTA | RESERVA sin confirmar tras 3 intentos: El WMS no respondió en el tiempo de espera. Responsable: Personal de almacén.
+  [ok] Cierre bloqueado: CIERRE_BLOQUEADO | No se puede cerrar: 1 operación(es) sin confirmar (RESERVA Incidencia).
+  [-] El WMS vuelve y el administrador reprocesa | La operación vuelve a la cola con el mismo id 7d8c2093…; antes de reenviar se consulta su estado.
+  [ok] Orden "Materiales reservados" con 1 reserva en el WMS | La incidencia quedó resuelta automáticamente al confirmarse la operación.
+
+## respuesta se perdió
+  [-] Orden OM-2026-0156: reserva de 3 baldes de aceite | El WMS aplicará la reserva pero su respuesta no llegará.
+  [espera] Resultado del trabajador | reintento, confirmada (recuperada por id)
+  [ok] El WMS recibió 1 envío(s) de reserva | El segundo intento no reenvió: preguntó GET /wms/operaciones/{id}, encontró la reserva hecha y aplicó esa respuesta. Queda una incidencia CONFIRMACION_PERDIDA ya resuelta como evidencia.
+  [ok] Salida por FEFO | L-2401 (vence 2026-12-15) × 3. El lote L-2312 venció el 2026-10-01: está bloqueado y no sale.
+
+## última unidad
+  [-] Dos órdenes, OM-2026-0157 y OM-2026-0158, piden la única válvula disponible | Las dos reservas se solicitan en el mismo instante.
+  [ok] OM-2026-0157: "Materiales reservados"; OM-2026-0158: "En espera de repuestos" | Una sola reserva confirmada. La otra recibió STOCK_INSUFICIENTE.
+  [ok] Solicitudes de la válvula: SOL-2026-0040 (OC creada) | La falta de stock no creó otra compra: ya existía SOL-2026-0040 con OC en el ERP.
+
+## llega la compra
+  [-] Llega mercadería de la OC 4500012871 (VAL-COM-0042) | Saldo por recibir: 2. CPP antes: Bs 6.850,00.
+  [ok] El WMS acepta 1 unidad y avisa por webhook: SOL-2026-0040 queda "Recibida parcial" | Recibido 1 de 2. El evento trae su propio id: si llega dos veces, se registra una vez.
+  [-] El ERP recalcula el CPP: Bs 6.875,00 | (valor anterior + 1 × Bs 6.900,00) ÷ 2 unidades. La solución no calcula ni guarda el costo: lo consulta.
+  [ok] Órdenes que esperaban este material | OM-2026-0158: Materiales reservados; OM-2026-0157: Materiales reservados
+
+## le corresponde
+  [ok] El técnico registra OM-2026-0159 | Permiso orden.crear: técnico o supervisor.
+  [ok] El técnico intenta validarla: SIN_PERMISO | El rol tecnico no tiene el permiso orden.validar.
+  [ok] El técnico intenta crear un material: SIN_PERMISO | El rol tecnico no tiene el permiso maestro.crear.
+  [ok] La bitácora no cambió con los intentos rechazados | 50 registros antes y 50 después.
+  [ok] La supervisora valida: "Validada" | Queda en la bitácora con usuario, rol, fecha, estado anterior y nuevo.
+
+## significa idempotencia
+  [-] Reserva confirmada con id d09cb7f5… | Reservado en el WMS: 2.
+  [ok] Se envía dos veces más el mismo mensaje al WMS | Respuestas: RES-88417 y RES-88417, la misma reserva. Reservado: 2.
+
+## diferencias
+  [-] Alguien ajusta −1 rodamiento directamente en el WMS sin informar al ERP | Es el caso que los controles técnicos no pueden impedir: un movimiento fuera del proceso.
+  [ok] Conciliación: 1 diferencia(s) | ROD-BOM-0017: WMS 5, ERP 6
+  [-] Se abre la incidencia DIFERENCIA_CONCILIACION para Almacén | Queda registrada para su revisión y resolución.

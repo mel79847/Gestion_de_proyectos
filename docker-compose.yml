@@ -1,0 +1,64 @@
+# Entorno completo de la solución: base de datos, RabbitMQ, API, trabajador de integración
+# y simuladores del WMS y del ERP. Uso: docker compose up --build
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ypfb_mro
+      POSTGRES_USER: mro
+      POSTGRES_PASSWORD: mro
+    volumes:
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - datos:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mro -d ypfb_mro"]
+      interval: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    ports: ["5672:5672", "15672:15672"]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      retries: 10
+
+  mocks:
+    build: .
+    command: ["node", "mocks/servidor.js"]
+    environment:
+      PUERTO_MOCKS: 4000
+      API_URL: http://api:3000
+      WEBHOOK_SECRETO: ${WEBHOOK_SECRETO:-secreto-webhook-demo}
+    ports: ["4000:4000"]
+
+  api:
+    build: .
+    environment: &entorno
+      DATABASE_URL: postgres://mro:mro@db:5432/ypfb_mro
+      WMS_URL: http://mocks:4000
+      ERP_URL: http://mocks:4000
+      JWT_SECRETO: ${JWT_SECRETO:-cambiar-en-produccion}
+      WEBHOOK_SECRETO: ${WEBHOOK_SECRETO:-secreto-webhook-demo}
+      AMQP_URL: amqp://rabbitmq:5672
+      PUERTO: 3000
+    ports: ["3000:3000"]
+    depends_on:
+      db: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      mocks: { condition: service_started }
+
+  worker:
+    build: .
+    command: ["node", "worker/index.js"]
+    environment:
+      <<: *entorno
+      INTERVALO_WORKER_MS: 1000
+      INTERVALO_RESPALDO_MS: 900000
+    depends_on:
+      db: { condition: service_healthy }
+      api: { condition: service_started }
+
+volumes:
+  datos:

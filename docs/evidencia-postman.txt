@@ -1,0 +1,170 @@
+newman
+
+YPFB MRO: trazabilidad de inventario
+
+❏ 0. Sesión
+↳ Login tecnico
+  POST http://localhost:3000/api/auth/login [200 OK, 586B, 98ms]
+  ✓  HTTP 200
+
+↳ Login supervisor
+  POST http://localhost:3000/api/auth/login [200 OK, 600B, 55ms]
+  ✓  HTTP 200
+
+↳ Login almacen
+  POST http://localhost:3000/api/auth/login [200 OK, 593B, 45ms]
+  ✓  HTTP 200
+
+↳ Login comprador
+  POST http://localhost:3000/api/auth/login [200 OK, 593B, 44ms]
+  ✓  HTTP 200
+
+↳ Login administrador
+  POST http://localhost:3000/api/auth/login [200 OK, 639B, 46ms]
+  ✓  HTTP 200
+
+❏ 1. Datos maestros
+↳ Catálogo con SS, ROP y EOQ
+  GET http://localhost:3000/api/maestros/materiales [200 OK, 3.68kB, 7ms]
+  ✓  HTTP 200
+  ✓  FIL-ACE-0021: SS 5, ROP 25, EOQ 105
+
+↳ Duplicado escrito de otra forma: 409
+  POST http://localhost:3000/api/maestros/materiales [409 Conflict, 557B, 9ms]
+  ✓  HTTP 409
+  ✓  MATERIAL_DUPLICADO
+
+↳ Técnico no puede crear materiales: 403
+  POST http://localhost:3000/api/maestros/materiales [403 Forbidden, 455B, 6ms]
+  ✓  HTTP 403
+
+❏ 2. Orden con stock suficiente
+↳ Material incompatible: 422
+  POST http://localhost:3000/api/ordenes [422 Unprocessable Entity, 485B, 13ms]
+  ✓  HTTP 422
+  ✓  MATERIAL_INCOMPATIBLE
+
+↳ Registrar orden
+  POST http://localhost:3000/api/ordenes [201 Created, 757B, 17ms]
+  ✓  HTTP 201
+
+↳ Técnico no puede validar: 403
+  POST http://localhost:3000/api/ordenes/OM-2026-0153/validacion [403 Forbidden, 455B, 4ms]
+  ✓  HTTP 403
+
+↳ Validar
+  POST http://localhost:3000/api/ordenes/OM-2026-0153/validacion [200 OK, 780B, 7ms]
+  ✓  HTTP 200
+  ✓  Validada
+
+↳ Solicitar reserva (202)
+  POST http://localhost:3000/api/ordenes/OM-2026-0153/reservas [202 Accepted, 566B, 22ms]
+  ✓  HTTP 202
+
+↳ Orden con reserva confirmada
+  GET http://localhost:3000/api/ordenes/OM-2026-0153 [200 OK, 1.8kB, 15ms]
+  ✓  HTTP 200
+  ✓  Materiales reservados
+
+↳ Disponibilidad con fuentes
+  GET http://localhost:3000/api/inventario/disponibilidad/FIL-ACE-0021?almacen=ALM-SCZ [200 OK, 1.18kB, 66ms]
+  ✓  HTTP 200
+  ✓  Fuente del físico: WMS
+
+↳ Registrar entrega
+  POST http://localhost:3000/api/ordenes/OM-2026-0153/entregas [202 Accepted, 900B, 9ms]
+  ✓  HTTP 202
+
+↳ Cambio de pieza
+  POST http://localhost:3000/api/ordenes/OM-2026-0153/cambios-pieza [201 Created, 584B, 10ms]
+  ✓  HTTP 201
+
+↳ Completar
+  POST http://localhost:3000/api/ordenes/OM-2026-0153/completar [200 OK, 798B, 10ms]
+  ✓  HTTP 200
+
+↳ Cerrar
+  POST http://localhost:3000/api/ordenes/OM-2026-0153/cierre [200 OK, 801B, 8ms]
+  ✓  HTTP 200
+  ✓  Cerrada
+
+↳ Trazabilidad de la orden
+  GET http://localhost:3000/api/ordenes/OM-2026-0153/trazabilidad [200 OK, 5.6kB, 14ms]
+  ✓  HTTP 200
+
+❏ 3. Compra sin duplicar
+↳ Evaluar válvula con compra en curso
+  POST http://localhost:3000/api/compras/evaluaciones/VAL-COM-0042 [200 OK, 1.55kB, 14ms]
+  ✓  HTTP 200
+  ✓  No duplica: COMPRA_EN_CURSO
+
+↳ Solicitudes
+  GET http://localhost:3000/api/compras/solicitudes [200 OK, 1.14kB, 4ms]
+  ✓  HTTP 200
+
+❏ 4. Falla del WMS
+↳ WMS sin respuesta
+  POST http://localhost:4000/simulador/wms/fallas [200 OK, 387B, 3ms]
+  ✓  HTTP 200
+
+↳ Orden para la prueba
+  POST http://localhost:3000/api/ordenes [201 Created, 743B, 9ms]
+  ✓  HTTP 201
+
+↳ Validar
+  POST http://localhost:3000/api/ordenes/OM-2026-0154/validacion [200 OK, 766B, 7ms]
+  ✓  HTTP 200
+
+↳ La API acepta la reserva aunque el WMS esté caído
+  POST http://localhost:3000/api/ordenes/OM-2026-0154/reservas [202 Accepted, 566B, 16ms]
+  ✓  HTTP 202
+
+↳ Cierre bloqueado
+  POST http://localhost:3000/api/ordenes/OM-2026-0154/cierre [422 Unprocessable Entity, 644B, 8ms]
+  ✓  HTTP 422
+  ✓  CIERRE_BLOQUEADO
+
+↳ Restablecer WMS
+  POST http://localhost:4000/simulador/wms/fallas [200 OK, 388B, 2ms]
+  ✓  HTTP 200
+
+↳ Operaciones de la orden
+  GET http://localhost:3000/api/integracion/operaciones?orden=OM-2026-0154 [200 OK, 916B, 14ms]
+  ✓  HTTP 200
+
+❏ 5. Webhooks y bitácora
+↳ Webhook sin firma: 401
+  POST http://localhost:3000/api/integracion/webhooks/wms [401 Unauthorized, 392B, 2ms]
+  ✓  HTTP 401
+
+↳ Recepción física en el WMS (dispara webhook firmado)
+  POST http://localhost:4000/simulador/wms/recepciones [201 Created, 629B, 80ms]
+  ✓  HTTP 201
+
+↳ Bitácora (Control interno)
+  GET http://localhost:3000/api/bitacora [200 OK, 5.62kB, 4ms]
+  ✓  HTTP 200
+
+↳ Incidencias
+  GET http://localhost:3000/api/incidencias [200 OK, 297B, 4ms]
+  ✓  HTTP 200
+
+┌─────────────────────────┬──────────────────┬──────────────────┐
+│                         │         executed │           failed │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              iterations │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│                requests │               33 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│            test-scripts │               33 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│      prerequest-scripts │                3 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              assertions │               42 │                0 │
+├─────────────────────────┴──────────────────┴──────────────────┤
+│ total run duration: 8.7s                                      │
+├───────────────────────────────────────────────────────────────┤
+│ total data received: 26.32kB (approx)                         │
+├───────────────────────────────────────────────────────────────┤
+│ average response time: 20ms [min: 2ms, max: 98ms, s.d.: 23ms] │
+└───────────────────────────────────────────────────────────────┘

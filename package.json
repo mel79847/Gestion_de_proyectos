@@ -1,0 +1,37 @@
+{
+  "name": "ypfb-mro-trazabilidad",
+  "version": "1.0.0",
+  "description": "Sistema de trazabilidad de inventario MRO: Mantenimiento, Inventario (WMS) y Compras (ERP)",
+  "scripts": {
+    "api": "node api/src/servidor.js",
+    "worker": "node worker/index.js",
+    "mocks": "node mocks/servidor.js",
+    "db:init": "node scripts/generar-seed.js && psql \"$DATABASE_URL\" -f db/schema.sql -f db/seed.sql",
+    "web:build": "node scripts/construir-web.js",
+    "test": "node --test test/unit/*.test.js",
+    "test:integracion": "node --test --test-concurrency=1 test/integracion/*.test.js",
+    "test:todo": "npm test && npm run test:integracion"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "express": "^4.22.3",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "esbuild": "^0.24.2",
+    "newman": "^6.2.3",
+    "playwright-core": "^1.64.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

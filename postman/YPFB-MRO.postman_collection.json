@@ -1,0 +1,1132 @@
+{
+  "info": {
+    "name": "YPFB MRO: trazabilidad de inventario",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Ejecutar en orden con el Collection Runner. Requiere API (3000), worker y simuladores (4000)."
+  },
+  "variable": [
+    {
+      "key": "api",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "sim",
+      "value": "http://localhost:4000"
+    },
+    {
+      "key": "orden",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Sesión",
+      "item": [
+        {
+          "name": "Login tecnico",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token_tecnico', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{api}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"tec.rojas\",\n  \"clave\": \"Demo2026!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login supervisor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token_supervisor', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{api}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"sup.vargas\",\n  \"clave\": \"Demo2026!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login almacen",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token_almacen', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{api}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"alm.mamani\",\n  \"clave\": \"Demo2026!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login comprador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token_comprador', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{api}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"com.flores\",\n  \"clave\": \"Demo2026!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login administrador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token_administrador', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{api}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"adm.sistema\",\n  \"clave\": \"Demo2026!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Datos maestros",
+      "item": [
+        {
+          "name": "Catálogo con SS, ROP y EOQ",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('FIL-ACE-0021: SS 5, ROP 25, EOQ 105', () => { const m = pm.response.json().find(x => x.codigo === 'FIL-ACE-0021'); pm.expect(m.parametros).to.include({ ss: 5, rop: 25, eoq: 105 }); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_tecnico}}"
+              }
+            ],
+            "url": "{{api}}/api/maestros/materiales"
+          }
+        },
+        {
+          "name": "Duplicado escrito de otra forma: 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+                  "pm.test('MATERIAL_DUPLICADO', () => pm.expect(pm.response.json().error.codigo).to.eql('MATERIAL_DUPLICADO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_administrador}}"
+              }
+            ],
+            "url": "{{api}}/api/maestros/materiales",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"familia\": \"FIL\",\n  \"subfamilia\": \"ACE\",\n  \"descripcion\": \"FILTRO ACEITE P/ MOTOR VOLVO D-13\",\n  \"unidad\": \"und\",\n  \"criticidad\": \"alta\",\n  \"metodo_reposicion\": \"EOQ\",\n  \"demanda_diaria\": 2,\n  \"sigma_diaria\": 1,\n  \"plazo_dias\": 10,\n  \"stock_maximo\": 140\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Técnico no puede crear materiales: 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_tecnico}}"
+              }
+            ],
+            "url": "{{api}}/api/maestros/materiales",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Orden con stock suficiente",
+      "item": [
+        {
+          "name": "Material incompatible: 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('MATERIAL_INCOMPATIBLE', () => pm.expect(pm.response.json().error.codigo).to.eql('MATERIAL_INCOMPATIBLE'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_tecnico}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipo\": \"CAM-MER-022\",\n  \"tipo\": \"correctivo\",\n  \"prioridad\": \"alta\",\n  \"diagnostico\": \"Prueba\",\n  \"fecha_requerida\": \"2026-11-30\",\n  \"materiales\": [\n    {\n      \"material\": \"FIL-ACE-0021\",\n      \"cantidad\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Registrar orden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('orden', pm.response.json().numero);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_tecnico}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipo\": \"CAM-VOL-014\",\n  \"tipo\": \"correctivo\",\n  \"prioridad\": \"alta\",\n  \"diagnostico\": \"Pérdida de presión de aceite\",\n  \"fecha_requerida\": \"2026-11-30\",\n  \"materiales\": [\n    {\n      \"material\": \"FIL-ACE-0021\",\n      \"cantidad\": 4\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Técnico no puede validar: 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_tecnico}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes/{{orden}}/validacion"
+          }
+        },
+        {
+          "name": "Validar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Validada', () => pm.expect(pm.response.json().estado).to.eql('Validada'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_supervisor}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes/{{orden}}/validacion"
+          }
+        },
+        {
+          "name": "Solicitar reserva (202)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202', () => pm.response.to.have.status(202));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_almacen}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes/{{orden}}/reservas"
+          }
+        },
+        {
+          "name": "Orden con reserva confirmada",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "setTimeout(() => {}, 2500); // el trabajador de integración procesa la bandeja"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Materiales reservados', () => pm.expect(pm.response.json().estado).to.eql('Materiales reservados'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_almacen}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes/{{orden}}"
+          }
+        },
+        {
+          "name": "Disponibilidad con fuentes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Fuente del físico: WMS', () => pm.expect(pm.response.json().fuente.fisico).to.eql('WMS'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_almacen}}"
+              }
+            ],
+            "url": "{{api}}/api/inventario/disponibilidad/FIL-ACE-0021?almacen=ALM-SCZ"
+          }
+        },
+        {
+          "name": "Registrar entrega",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202', () => pm.response.to.have.status(202));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_almacen}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes/{{orden}}/entregas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receptor\": \"tec.rojas\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Cambio de pieza",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "setTimeout(() => {}, 2500); // el trabajador de integración procesa la bandeja"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_tecnico}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes/{{orden}}/cambios-pieza",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"material\": \"FIL-ACE-0021\",\n  \"pieza_retirada\": \"Filtro saturado\",\n  \"condicion\": \"desgastada\",\n  \"destino\": \"baja\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Completar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_tecnico}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes/{{orden}}/completar"
+          }
+        },
+        {
+          "name": "Cerrar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Cerrada', () => pm.expect(pm.response.json().estado).to.eql('Cerrada'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_supervisor}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes/{{orden}}/cierre"
+          }
+        },
+        {
+          "name": "Trazabilidad de la orden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_supervisor}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes/{{orden}}/trazabilidad"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Compra sin duplicar",
+      "item": [
+        {
+          "name": "Evaluar válvula con compra en curso",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('No duplica: COMPRA_EN_CURSO', () => pm.expect(pm.response.json().motivo).to.eql('COMPRA_EN_CURSO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_comprador}}"
+              }
+            ],
+            "url": "{{api}}/api/compras/evaluaciones/VAL-COM-0042"
+          }
+        },
+        {
+          "name": "Solicitudes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_comprador}}"
+              }
+            ],
+            "url": "{{api}}/api/compras/solicitudes"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Falla del WMS",
+      "item": [
+        {
+          "name": "WMS sin respuesta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{sim}}/simulador/wms/fallas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"caido\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Orden para la prueba",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('orden', pm.response.json().numero);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_tecnico}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipo\": \"CAM-VOL-014\",\n  \"tipo\": \"correctivo\",\n  \"prioridad\": \"alta\",\n  \"diagnostico\": \"Prueba de caída\",\n  \"fecha_requerida\": \"2026-11-30\",\n  \"materiales\": [\n    {\n      \"material\": \"FIL-AIR-0008\",\n      \"cantidad\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Validar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_supervisor}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes/{{orden}}/validacion"
+          }
+        },
+        {
+          "name": "La API acepta la reserva aunque el WMS esté caído",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202', () => pm.response.to.have.status(202));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_almacen}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes/{{orden}}/reservas"
+          }
+        },
+        {
+          "name": "Cierre bloqueado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "setTimeout(() => {}, 2500); // el trabajador de integración procesa la bandeja"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('CIERRE_BLOQUEADO', () => pm.expect(pm.response.json().error.codigo).to.eql('CIERRE_BLOQUEADO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_supervisor}}"
+              }
+            ],
+            "url": "{{api}}/api/ordenes/{{orden}}/cierre"
+          }
+        },
+        {
+          "name": "Restablecer WMS",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{sim}}/simulador/wms/fallas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"caido\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Operaciones de la orden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_administrador}}"
+              }
+            ],
+            "url": "{{api}}/api/integracion/operaciones?orden={{orden}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Webhooks y bitácora",
+      "item": [
+        {
+          "name": "Webhook sin firma: 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Firma",
+                "value": "00"
+              }
+            ],
+            "url": "{{api}}/api/integracion/webhooks/wms",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_evento\": \"00000000-0000-4000-8000-000000000000\",\n  \"evento\": \"recepcion.aceptada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Recepción física en el WMS (dispara webhook firmado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{sim}}/simulador/wms/recepciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orden_compra\": \"4500012871\",\n  \"material\": \"VAL-COM-0042\",\n  \"almacen\": \"ALM-CBB\",\n  \"cantidad_recibida\": 1,\n  \"cantidad_aceptada\": 1,\n  \"lote\": \"L-VD-2610\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Bitácora (Control interno)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_administrador}}"
+              }
+            ],
+            "url": "{{api}}/api/bitacora"
+          }
+        },
+        {
+          "name": "Incidencias",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_administrador}}"
+              }
+            ],
+            "url": "{{api}}/api/incidencias"
+          }
+        }
+      ]
+    }
+  ]
+}

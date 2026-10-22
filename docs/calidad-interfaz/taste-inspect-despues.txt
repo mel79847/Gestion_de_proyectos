@@ -1,0 +1,9 @@
+panel | 0 FAIL, 0 WARN | 
+demostracion | 0 FAIL, 1 WARN | [ragged-row] 
+ordenes | 0 FAIL, 1 WARN | [ragged-row] 
+inventario | 0 FAIL, 0 WARN | 
+compras | 0 FAIL, 1 WARN | [ragged-row] 
+integracion | 0 FAIL, 0 WARN | 
+maestros | 0 FAIL, 0 WARN | 
+auditoria | 0 FAIL, 1 WARN | [hero-void] 
+arquitectura | 0 FAIL, 0 WARN | 

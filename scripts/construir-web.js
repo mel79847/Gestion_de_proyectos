@@ -6,8 +6,9 @@
  */
 import { build } from 'esbuild';
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
-const raiz = new URL('..', import.meta.url).pathname;
+const raiz = fileURLToPath(new URL('../', import.meta.url));
 const css = readFileSync(`${raiz}web/src/estilos.css`, 'utf8');
 const comun = { bundle: true, format: 'iife', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment', target: 'es2022', minify: true, legalComments: 'none', write: false };
 
